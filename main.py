@@ -1,30 +1,40 @@
 import os
-import logging
+import asyncio
+from flask import Flask, request
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler
 from supabase import create_client, Client
 
-# Logging setup
-logging.basicConfig(level=logging.INFO)
-
 # Environment Variables
-TOKEN = os.environ.get'8739563374:AAH0rwMiRn43jntdN3P6f27fyMp_ONtVfk0'
-SUPABASE_URL = os.environ.get'https://vsdkhczvjrrnjbmtjhxx.supabase.co'
-SUPABASE_KEY = os.environ.get'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzZGtoY3p2anJybmpibXRqaHh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NDM2MjYsImV4cCI6MjA5ODUxOTYyNn0.6P2aMs7jCm71GNKkfHBCC_QOi5_YBqfQoNNfoZTwqQ8'
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-# Initialize Supabase
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Initialize Flask
+app = Flask(__name__)
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Initialize Supabase (Optional)
+supabase: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Initialize Telegram App
+telegram_app = ApplicationBuilder().token(TOKEN).build()
+
+async def start(update: Update, context):
     user = update.effective_user
-    await update.message.reply_text(f"Welcome {user.first_name}! Your betting bot is officially alive.")
+    await update.message.reply_text(f"Welcome {user.first_name}! Your bot is alive on PythonAnywhere!")
 
-if __name__ == "__main__":
-    if not TOKEN:
-        raise ValueError("TELEGRAM_TOKEN environment variable is missing!")
-    
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    
-    print("Bot is polling...")
-    app.run_polling()
+telegram_app.add_handler(CommandHandler("start", start))
+
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    if request.method == "POST":
+        asyncio.run(telegram_app.process_update(
+            Update.de_json(request.get_json(force=True), telegram_app.bot)
+        ))
+        return "ok", 200
+
+@app.route("/", methods=["GET"])
+def index():
+    return "Bot server is active!", 200
