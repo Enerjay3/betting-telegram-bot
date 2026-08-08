@@ -13,7 +13,7 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 # Initialize Flask
 app = Flask(__name__)
 
-# Initialize Supabase (Optional)
+# Initialize Supabase
 supabase: Client = None
 if SUPABASE_URL and SUPABASE_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -22,17 +22,22 @@ if SUPABASE_URL and SUPABASE_KEY:
 telegram_app = ApplicationBuilder().token(TOKEN).build()
 
 async def start(update: Update, context):
-    user = update.effective_user
-    await update.message.reply_text(f"Welcome {user.first_name}! Your bot is alive on PythonAnywhere!")
+    await update.message.reply_text("Welcome! Your bot is alive on PythonAnywhere!")
 
 telegram_app.add_handler(CommandHandler("start", start))
+
+# Helper function to initialize and process updates cleanly
+async def process_telegram_update(update_json):
+    async with telegram_app:
+        await telegram_app.initialize()
+        update = Update.de_json(update_json, telegram_app.bot)
+        await telegram_app.process_update(update)
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     if request.method == "POST":
-        asyncio.run(telegram_app.process_update(
-            Update.de_json(request.get_json(force=True), telegram_app.bot)
-        ))
+        update_json = request.get_json(force=True)
+        asyncio.run(process_telegram_update(update_json))
         return "ok", 200
 
 @app.route("/", methods=["GET"])
