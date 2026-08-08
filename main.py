@@ -8,9 +8,9 @@ from supabase import create_client, Client
 logging.basicConfig(level=logging.INFO)
 
 # Environment Variables
-TOKEN = os.environ.get("TELEGRAM_TOKEN")
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+TOKEN = os.environ.get'8739563374:AAH0rwMiRn43jntdN3P6f27fyMp_ONtVfk0'
+SUPABASE_URL = os.environ.get'https://vsdkhczvjrrnjbmtjhxx.supabase.co'
+SUPABASE_KEY = os.environ.get'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzZGtoY3p2anJybmpibXRqaHh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NDM2MjYsImV4cCI6MjA5ODUxOTYyNn0.6P2aMs7jCm71GNKkfHBCC_QOi5_YBqfQoNNfoZTwqQ8'
 
 # Initialize Supabase
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
